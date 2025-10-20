@@ -1,5 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Gidole&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
-
+@import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
 @import "tailwindcss";
 @plugin "daisyui" {
   themes: dark --default;
@@ -11,5 +11,5 @@
 }
 
 .font-2 {
-      font-family: "Gidole", sans-serif;
+    font-family: 'VT323', monospace;
 }
