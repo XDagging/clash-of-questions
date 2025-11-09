@@ -3,7 +3,10 @@ import callApi, { isEmail, isPassword, } from "../functions"
 
 import { FaGoogle } from "react-icons/fa"
 import Notif from "../components/Notif"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, Link } from "react-router-dom"
+import Navbar from "../components/Navbar"
+import Footer from "../components/Footer"
+
 import type { NotifType, Timeout } from "../types"
 import { Helmet } from "react-helmet"
 type LoginUser = {
@@ -15,7 +18,7 @@ type LoginUser = {
 let timeout: Timeout;
 export default function Login() {
     const nav = useNavigate();
-    const url = window.location.href.includes("localhost") ? "https://localhost:443" : "https://api.toomanyheys.com";
+    const url = window.location.href.includes("localhost") ? "https://localhost:443" : "https://api.clashofquestions.com";
     const [loading, setLoading] = useState(false);
     const [user, setUser] = useState<LoginUser>({
         email: "",
@@ -103,57 +106,50 @@ export default function Login() {
         
 <Helmet>
             <meta charSet="utf-8" />
-            <title>Login - toomanyheys</title>
-            <meta name="keywords" content="sat, satprep, sat dating, rizz, rizz dating" />
+            <title>Login - Clash Of Questions</title>
+            <meta name="keywords" content="sat, clash royale, sat, satprep" />
             <meta
       name="description"
-      content="Log into your toomanyheys account today!"
+      content="Play Clash of Questions now!"
     />
         </Helmet>
         <Notif type={notif.type} message={notif.message} />
-        <div className="min-h-screen">
-            
-        <div className="flex flex-col bg-base-200 md:w-2/6 mx-auto items-center justify-items-center justify-center gap-2 rounded-box md:p-8 p-3 text-center">
-                    <p className="text-5xl font-1 font-extrabold">Welcome back <br/></p>
-                    <p className="font-1 text-lg w-4/6">Should be an easy 1600, right?</p>
         
-                    <div className="my-10 flex font-1 flex-col gap-2 w-5/6 mx-auto">
-                        
-        
-                        <fieldset className="fieldset w-full">
-                            {/* <legend className="fieldset-legend">Page title</legend> */}
-                            <input value={user.email} onChange={(e) => setUser((prev) => {
-                                return {...prev, email: e.target.value}
-                            })} type="text" className="input w-full" placeholder="Email" />
+
+        <div className="md:hero min-h-screen w-screen">
+
+            <div className="hero-content font-1 md:w-4/6 bg-black md:h-5/6 h-full rounded-box border border-primary">
+                <div className="md:w-4/6 mx-auto text-center flex flex-col gap-2">
                 
-                        </fieldset>
-                         <fieldset className="fieldset">
-                            {/* <legend className="fieldset-legend">Page title</legend> */}
-                            <input value={user.password} onChange={(e) => setUser((prev) => {
-                                return {...prev, password: e.target.value}
-                            })} type="password" className="input w-full" placeholder="Password" />
-                 
-                        </fieldset>
-                        {!loading ? <>
-                        <button onClick={doSubmit} className="btn btn-primary">Login</button>
-                        
-                        </> : <>
-                        <button className="btn btn-disabled"><div className="loading loading-spinner"></div>Login</button>
-                        </>}
-                        
-          <div className="divider w-full divider-neutral">or</div>
-                        <a href={url + "/auth/google"} className="btn btn-outline btn-secondary ">
+                    <h1 className="text-5xl font-bold">
+                        start clashing! 
+                    </h1>
+                    <p>join hundreds improving their SAT game while becoming the best</p>
+
+                    <div className="divider"></div>
+                    <div>
+                        <a href={url + "/auth/google"} className="btn btn-lg btn-secondary ">
                             <FaGoogle />
                             <p>Continue with Google</p>
                         </a>
-                    </div>
-                
-        
-        
-        
-                </div>
 
+                    </div>
+
+
+                    <div className="justify-self-end mt-4">
+                        <Link to="/" className="btn btn-ghost btn-xs">Go back to home</Link>
+                    </div>
+                 
+                  
+                </div>
+                
+            </div>
+       
+            
+   
         </div>
+
+        <Footer />
      
         
 

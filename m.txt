@@ -1,0 +1,39 @@
+     <div className="flex flex-col bg-base-200 md:w-2/6 mx-auto items-center justify-items-center justify-center gap-2 rounded-box md:p-8 p-3 text-center">
+                    <p className="text-5xl font-1 font-extrabold">Welcome back</p>
+                    <p className="font-1 text-lg w-4/6">Should be an easy 1600, right?</p>
+        
+                    <div className="my-10 flex font-1 flex-col gap-2 w-5/6 mx-auto">
+                        
+        
+                        <fieldset className="fieldset w-full">
+                            {/* <legend className="fieldset-legend">Page title</legend> */}
+                            <input value={user.email} onChange={(e) => setUser((prev) => {
+                                return {...prev, email: e.target.value}
+                            })} type="text" className="input w-full" placeholder="Email" />
+                
+                        </fieldset>
+                         <fieldset className="fieldset">
+                            {/* <legend className="fieldset-legend">Page title</legend> */}
+                            <input value={user.password} onChange={(e) => setUser((prev) => {
+                                return {...prev, password: e.target.value}
+                            })} type="password" className="input w-full" placeholder="Password" />
+                 
+                        </fieldset>
+                        {!loading ? <>
+                        <button onClick={doSubmit} className="btn btn-primary">Login</button>
+                        
+                        </> : <>
+                        <button className="btn btn-disabled"><div className="loading loading-spinner"></div>Login</button>
+                        </>}
+                        
+          <div className="divider w-full divider-neutral">or</div>
+                        <a href={url + "/auth/google"} className="btn btn-outline btn-secondary ">
+                            <FaGoogle />
+                            <p>Continue with Google</p>
+                        </a>
+                    </div>
+                
+        
+        
+        
+                </div>

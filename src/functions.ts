@@ -42,7 +42,7 @@ export interface Session {
   ): Promise<any> {
 
 
-    const endpoint = (window.location.href.includes("localhost")) ?  "https://localhost:443" : "https://api.toomanyheys.com";
+    const endpoint = (window.location.href.includes("localhost")) ?  "https://localhost:443" : "https://api.clashofquestions.com";
       return new Promise(async (resolve, reject) => {
         try {
           const bodyString = JSON.stringify(body);

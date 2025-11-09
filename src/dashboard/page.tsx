@@ -8,7 +8,7 @@ import Instructions from "../components/Instructions";
 // Game Dashboard
 export default function Dashboard() {
     const nav = useNavigate();
-    const x = "/DDD.gif"; 
+    const x = "/logo.png"; 
 
     const [loading, setLoading] = useState(false);
     const [openInstructions, setOpenInstructions] = useState(false);
@@ -61,8 +61,9 @@ export default function Dashboard() {
          <section className="w-full h-screen bg-[url('/grid.apng')] bg-cover aspect-auto">
          <div className="hero h-[90vh] w-full">
           <div className="hero-content flex flex-col gap-4 items-center">
-            <h1 className="text-8xl font-2 mx-auto animate-bounce"><span className="text-primary">C</span>O<span className="text-primary">C</span></h1>
-            {/* <img src={x} className="h-40 mx-auto animate-bounce" alt="DDD gif" /> */}
+
+            <img src={x} className="h-40 mx-auto" alt="DDD gif" />
+            <h1 className="text-8xl font-2 mx-auto"><span className="text-primary">C</span>O<span className="text-primary">C</span></h1>
             <a href="https://github.com/XDagging/clash-of-questions" className="font-2 flex flex-row items-center gap-2">We're open source on <Github /></a>
             <div className="mt-10 flex flex-col w-full gap-2">
               <button onClick={findOpenLobby} className="btn animate-bounce btn-primary font-2 text-lg scale-150 my-3">Join a Lobby <Gamepad2 /></button>
