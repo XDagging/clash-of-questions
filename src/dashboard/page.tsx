@@ -3,14 +3,15 @@ import { Gamepad2, ReceiptText, X } from "lucide-react";
 import { Github } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import callApi from "../functions";
+import Instructions from "../components/Instructions";
 
-
+// Game Dashboard
 export default function Dashboard() {
     const nav = useNavigate();
     const x = "/DDD.gif"; 
 
     const [loading, setLoading] = useState(false);
-  
+    const [openInstructions, setOpenInstructions] = useState(false);
     const findOpenLobby = () => {
       setLoading(true);
 
@@ -41,25 +42,39 @@ export default function Dashboard() {
 };
 
 
+    const openInstr = () => {
+      setOpenInstructions((prev) => !prev);
+
+
+    }
+
+
     return (
         <>
+
+        {(openInstructions) && (
+
+          <Instructions closeInstructions={openInstr} />
+
+        )}
+        
          <section className="w-full h-screen bg-[url('/grid.apng')] bg-cover aspect-auto">
          <div className="hero h-[90vh] w-full">
           <div className="hero-content flex flex-col gap-4 items-center">
-            <img src={x} className="h-40 mx-auto animate-bounce" alt="DDD gif" />
+            <h1 className="text-8xl font-2 mx-auto animate-bounce"><span className="text-primary">C</span>O<span className="text-primary">C</span></h1>
+            {/* <img src={x} className="h-40 mx-auto animate-bounce" alt="DDD gif" /> */}
             <a href="https://github.com/XDagging/clash-of-questions" className="font-2 flex flex-row items-center gap-2">We're open source on <Github /></a>
             <div className="mt-10 flex flex-col w-full gap-2">
               <button onClick={findOpenLobby} className="btn animate-bounce btn-primary font-2 text-lg scale-150 my-3">Join a Lobby <Gamepad2 /></button>
               
-               <Link to="/create" className="btn btn-primary btn-outline font-2 text-lg scale-150 my-3" onClick={() => {
+               <Link to="/review" className="btn btn-secondary btn-outline font-2 text-lg scale-150 my-3" onClick={() => {
                 
-              }}>Create your own Quiz <Gamepad2 /></Link>
+              }}>Review Study Tools <Gamepad2 /></Link>
               <button 
+                onClick={openInstr}
                 className="btn btn-outline font-2 text-lg scale-150 my-3"
 
               >Instructions<ReceiptText /></button>
-              
-              <p className="pt-1"> </p>
               
               <Link
                 to="/credits"

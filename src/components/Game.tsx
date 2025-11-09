@@ -1,87 +1,147 @@
 import kaplay from "kaplay";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useContext } from "react";
 import { MdKeyboardCommandKey } from "react-icons/md";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import UserContext from "../context";
+import type { User } from "../types";
+import { WarehouseIcon } from "lucide-react";
+
 // Define the shape of the data we expect from the server for clarity
 interface ServerCharacter {
-    id: string;
-    ownerId: string;
-    name: string;
-    pos: { x: number; y: number };
-    vel: { x: number; y: number };
-    health: number;
-    maxHealth: number;
-    type: string;
-    // We might add more from the server later, like 'isAttacking'
+  id: string;
+  ownerId: string;
+  name: string;
+  pos: { x: number; y: number };
+  vel: { x: number; y: number };
+  health: number;
+  animation: string;
+  maxHealth: number;
+  isBackwards: boolean;
+  type: string;
+  // We might add more from the server later, like 'isAttacking'
 }
 
 interface GameStateUpdate {
     type: "GAME_STATE_UPDATE";
     characters: ServerCharacter[];
-    playerOneCoconuts: number;
-    playerTwoCoconuts: number;
+    coconuts: number;
 }
 
 interface GameStart {
-    type: "GAME_START";
-    yourPlayerId: string;
-    // any other initial data...
+  type: "GAME_START";
+  playerId: string;
+  // any other initial data...
 }
 
+interface NewQuestion {
+  type: "NEW_QUESTION";
+  question: any;
+  wasRight: boolean;
+  answer: string;
+}
+
+interface WinCondition {
+  type: "WIN_CONDITION";
+  hasWon: boolean;
+
+
+
+
+
+}
+
+interface GameProps {
+  websocketRef: any
+  setUpdateQuestion: any
+  setHasWon: any
+
+}
+
+
 // Props are no longer needed as the server will provide all game data
-export default function Game() {
-    const [searchParams] = useSearchParams();
-    const [hasStarted, setHasStarted] = useState(false);
-    const kaplayInitialized = useRef(false);
-    const kaplayInstance = useRef<any>(null);    
-    // Refs to hold persistent objects without causing re-renders
-    const serverObjects = useRef(new Map<string, any>());
-    const ws = useRef<WebSocket | null>(null);
-    const localPlayerId = useRef<string | null>(null);
+export default function Game(props: GameProps) {
+  const nav = useNavigate();
+  const [searchParams] = useSearchParams();
+  const [hasStarted, setHasStarted] = useState(false);
+  const kaplayInitialized = useRef(false);
+  const kaplayInstance = useRef<any>(null);
+  // Refs to hold persistent objects without causing re-renders
+  const serverObjects = useRef(new Map<string, any>());
+  const ws = useRef<WebSocket | null>(null);
+  const localPlayerId = useRef<string | null>(null);
+  const user = useContext(UserContext) as User | null;
+  const latestGameState = useRef<GameStateUpdate | null>(null);
+  useEffect(() => {
+    if (!user) {
+      nav("/login");
+    }
+  }, [user, nav]);
 
-    const [socketMessage, setSocketMessage] = useState<any>(null);
+    // const stateQueue = useRef<GameStateUpdate[]>([]);
 
-    useEffect(() => {
- 
+  useEffect(() => {
+    // --- 3. WEBSOCKET CONNECTION & EVENT HANDLING ---
+    // if (ws.current) {
+    //   return; // Already connected
+    // }
+    try {
+      console.log("we just tried connecting to the websocket");
+      ws.current = new WebSocket("wss://localhost:443"); // Use your actual server URL
+      props.websocketRef.current = ws.current;
+      ws.current.onopen = async () => {
+        // await new Promise(r => setTimeout(r, 250));
+        // sometimes the event is buggy and this opens too early
+        console.log("✅ WebSocket connection established.");
+        const gameId = searchParams.get("gameId");
+        if (gameId) {
+          ws.current?.send(gameId);
+        } else {
+          console.error("No gameId found in URL!");
+        }
+      };
 
-        // --- 3. WEBSOCKET CONNECTION & EVENT HANDLING ---
+      ws.current.onmessage = (event) => {
+        const message: GameStateUpdate | GameStart | NewQuestion | WinCondition = JSON.parse(event.data);
 
-        try {
-          console.log("we just tried connecting to the websocket")
-          ws.current = new WebSocket("wss://localhost:443"); // Use your actual server URL
+        if (message.type === "GAME_START") {
+          setHasStarted(true);
+          localPlayerId.current = message.playerId;
+          console.log(
+            `🎉 Game started! This client is Player ID: ${localPlayerId.current}`
+          );
+        } else if (message.type === "GAME_STATE_UPDATE") {
+          // console.log("we just received a new message", message)
+          latestGameState.current = message;
+          // console.log("we just received a gameState update from the server");
+          // stateQueue.current.push(message);
 
-          ws.current.onopen = async() => {
-            // await new Promise(r => setTimeout(r, 250));
-            // sometimes the event is buggy and this opens too early
-            console.log("✅ WebSocket connection established.");
-            const gameId = searchParams.get("gameId")
-            if (gameId) {
-                ws.current?.send(gameId);
-            } else {
-                console.error("No gameId found in URL!");
-            }
-          };
+          // synchronizeGameState(message);
 
-        ws.current.onmessage = (event) => {
-            const message: GameStateUpdate | GameStart = JSON.parse(event.data);
-            
-            if (message.type === "GAME_START") {
-                setHasStarted(true);
-                localPlayerId.current = message.yourPlayerId;
-                console.log(`🎉 Game started! This client is Player ID: ${localPlayerId.current}`);
-            }
-            
-            if (message.type === "GAME_STATE_UPDATE") {
-                // console.log("we are receiving an updatee", message)
-                setSocketMessage(message);
+          // Update UI elements like coconut count
+        } else if (message.type === "NEW_QUESTION") {
+          console.log("we just received a new message", message)
+          props.setUpdateQuestion({
+            question: message.question,
+            wasRight: message.wasRight,
+            answer: message.answer
+          })
 
-                
-                // synchronizeGameState(message);
-                
-                // Update UI elements like coconut count
-            
-            }
-        };
+
+        } else if (message.type === "WIN_CONDITION") {
+          console.log('this is the type of message ts has',message);
+
+          console.log("the hasWOn value type is:", typeof message.hasWon)
+          if (typeof message.hasWon === "boolean") {
+            console.log("THIS IS THE WIN CONDITION: ", message.hasWon)
+            props.setHasWon(message.hasWon);
+          } else {
+            console.log("this is thw ")
+          }
+
+
+        }
+
+      };
 
         ws.current.onerror = (error) => {
             console.error("WebSocket Error:", error);
@@ -107,7 +167,7 @@ export default function Game() {
 
     useEffect(() => {
         console.log("this 2nd useEffect was called", hasStarted)
-        if (!hasStarted) {
+        if (!hasStarted || kaplayInitialized.current) {
           return;
         }
 
@@ -117,7 +177,7 @@ export default function Game() {
       
 
       
-      if (!kaplayInitialized.current) {
+      
         const gameStats = {
         leftTower: 2000,
         rightTower: 2000,
@@ -130,10 +190,11 @@ export default function Game() {
         // --- 1. KAPLAY ENGINE & ASSET SETUP ---
         const tileWidth = 32;
         const heightOfUI = 120;
-
+        const totalWidth = window.innerWidth / 2;
+        const totalHeight = window.innerHeight;
         const k = kaplayInstance.current===null ? kaplay({
-            width: window.innerWidth / 2,
-            height: window.innerHeight,
+            width: totalWidth,
+            height: totalHeight,
         }) : kaplayInstance.current;
 
 
@@ -144,8 +205,7 @@ export default function Game() {
      const maxCoconuts = 10;
 
     // These are some universal constants
-    const totalWidth = window.outerWidth / 2;
-    const totalHeight = window.outerHeight;
+  
 
     const totalColumns = 288 / sourceTileWidth; // 36
     const totalRows = 576 / sourceTileWidth; // 18
@@ -374,6 +434,8 @@ export default function Game() {
 
     // **CORRECTED FUNCTION**
     function createCharacterObject(serverChar: ServerCharacter) {
+
+        console.log("owner id of serverchar", serverChar.ownerId)
         const isFriendly = (serverChar.ownerId === localPlayerId.current);
         const k = kaplayInstance.current;
 
@@ -390,8 +452,12 @@ export default function Game() {
             listOfAllSprites[spriteKey], // Now this is safe
             k.pos(normalizedPos.x, normalizedPos.y),
             k.scale(2),
+            serverChar.isBackwards ? k.rotate(180): "",
+            // k.body(),
+            // k.area(),
             k.anchor("center"),
             isFriendly ? "friend" : "enemy",
+
         ]);
 
         if (serverChar.maxHealth > 0) {
@@ -427,29 +493,29 @@ export default function Game() {
             y: totalHeight*(objPos.y/WORLD_HEIGHT)
 
           }
-          console.log("this is the normalized position", normalizedPos)
+          // console.log("this is the normalized position", normalizedPos)
           return normalizedPos
 
         }
 
 
         function synchronizeGameState(state: GameStateUpdate) {
-    const k = kaplayInstance.current;
+        const k = kaplayInstance.current;
+
+    
 
     // This logic for updating coconut count is fine
-    const coconutText = k.get("coconutLabel")[0];
-    if (coconutText && localPlayerId.current) {
-        const myCoconuts = localPlayerId.current==="playerOne" ? state.playerOneCoconuts : state.playerTwoCoconuts;
-
-        gameStats.coconuts = myCoconuts;
-        coconutText.text = String(Math.floor(myCoconuts));
-    }
-
+   if (localPlayerId.current) {
+    gameStats.coconuts = state.coconuts;
+} else {
+    // This might still log if the player ID isn't set, but the coconutText error is gone
+    console.log("localPlayerId is null", localPlayerId.current) 
+}
     const receivedIds = new Set<string>();
-    console.log("this is the length of all characters", state.characters.length)
+    // console.log("this is the length of all characters", state.characters.length)
     for (const serverChar of state.characters) {
+        // console.log("we are at ")
         receivedIds.add(serverChar.id);
-        console.log("this is the serverchar id", serverChar.id)
         let localObj = serverObjects.current.get(serverChar.id);
 
         if (!localObj) {
@@ -470,37 +536,47 @@ export default function Game() {
         // console.log("this is the serverchar", serverChar.vel)
         const isMoving = serverChar.vel.x !== 0 || serverChar.vel.y !== 0;
 
-        // **NEW**: Define which characters need directional sprites
-        const directionalCharacters = ["shooterMonkey", "giant", "monkey"];
+// === START: REPLACEMENT LOGIC ===
 
-        if (isMoving && directionalCharacters.includes(serverChar.name)) {
-            // This logic is mostly the same, but now guarded
-            const direction = serverChar.vel.y < 0 ? "Back" : "Front";
-            const animName = `walk_${direction.toLowerCase()}`;
-            if (localObj.curAnim() !== animName) {
-                localObj.use(k.sprite(serverChar.name + direction + "Walking"));
-                localObj.play(animName);
-            }
-        } else {
-            // **REVISED LOGIC FOR STATIONARY OBJECTS**
-            // if (localObj.isAnimPlaying()) localObj.stop();
-            
-            let spriteKey = serverChar.name; // Default to the base name (e.g., "tower")
+if (isMoving) {
+    // 1. HANDLE MOVING CHARACTERS
+    const direction = serverChar.vel.y < 0 ? "Back" : "Front";
+    const animName = `walk_${direction.toLowerCase()}`;
+    
+    // Only switch animation if it's not already playing
+    if (localObj.curAnim() !== animName) {
+        localObj.use(k.sprite(serverChar.name + direction + "Walking"));
+        localObj.play(animName);
+    }
+} else {
+    // 2. HANDLE STATIONARY CHARACTERS (ATTACKING OR IDLE)
+    if (serverChar.animation.includes("Shooting")) {
+        // A. Handle attacking
+        const correspondingCommand: Record<string, string> = {
+            "FrontAnimationShooting": "shoot_front",
+            "BackAnimationShooting": "shoot_back",
+            "Shooting": "shoot", // For towers
+        };
+        const cmd = correspondingCommand[serverChar.animation];
 
-            // If it's a directional character, then append "Front" or "Back"
-            if (directionalCharacters.includes(serverChar.name)) {
-                // Use <= 0 to correctly handle the stationary case where vel.y is 0
-                const direction = serverChar.vel.y <= 0 ? "Back" : "Front";
-                spriteKey += direction;
-            } else if (serverChar.type === "tower") {
-              localObj.use(listOfAllSprites["tower"]);
-              return;
-            }
-            
-            // This is now safe because spriteKey will be "tower" for towers, 
-            // and "shooterMonkeyFront" for shooter monkeys, etc.
-            localObj.use(listOfAllSprites[spriteKey]);
+        if (cmd && localObj.curAnim() !== cmd) {
+            // The sprite name is composed, e.g., "giant" + "BackAnimationShooting"
+            localObj.use(k.sprite(serverChar.name + serverChar.animation));
+            localObj.play(cmd);
         }
+    } else {
+        // B. Handle idle
+        let spriteKey = serverChar.name;
+        if (directionalCharacters.includes(serverChar.name)) {
+            // Determine facing direction based on last known velocity or default
+            // Assuming friendly units face front when idle
+            const isFriendly = (serverChar.ownerId === localPlayerId.current);
+            spriteKey += isFriendly ? "Front" : "Back";
+        }
+        // Use the static sprite from the list
+        localObj.use(listOfAllSprites[spriteKey]);
+    }
+}
     }
 
     for (const [id, localObj] of serverObjects.current.entries()) {
@@ -514,6 +590,18 @@ export default function Game() {
 
 
         k.scene("game", () => {
+
+          k.onUpdate(() => {
+                // Check if there are any new states in the queue
+                if (latestGameState.current) {
+                    // Grab only the MOST RECENT state from the server
+                    synchronizeGameState(latestGameState.current);
+
+                    // Synchronize the game using this definitive state
+                   
+                    // console.log
+                }
+          });
             // Your map and UI setup code (largely unchanged)
             // ... generateMap(), uiPanel, coconut bar, etc.
              
@@ -539,6 +627,7 @@ export default function Game() {
       ]);
       const coconutCounter = uiPanel.add([
         k.pos(heightOfUI + barBg.width / 2, 40), // Positioned to the left of the bar
+        "coconutLabel"
       ]);
 
       // The magenta fill of the bar
@@ -561,6 +650,7 @@ export default function Game() {
         k.anchor("center"),
         k.pos(0, 0),
         k.color(k.BLACK),
+ 
       ]);
 
       coconutCounter.onUpdate(() => {
@@ -578,6 +668,116 @@ export default function Game() {
             // Your card deck setup (unchanged)
             // ... playerDeck, cardContainer, etc.
 
+            const playerDeck = [
+        {
+          sprite: listOfAllSprites.shooterMonkeyFront,
+          name: "shooterMonkey",
+          cost: 1,
+          type: "troop",
+          health: 100,
+          maxHealth: 100,
+          damage: 20,
+          attackRadius: 150,
+          speed: 200,
+          attackSpeed: 1.2,
+        },
+        {
+          sprite: listOfAllSprites.giantFront,
+          cost: 4,
+          name: "giant",
+          type: "troop",
+          health: 400,
+          maxHealth: 400,
+          damage: 200,
+          attackRadius: 60,
+          speed: 20,
+          attackSpeed: 1.2,
+        },
+        {
+          sprite: listOfAllSprites.monkeyFront,
+          cost: 3,
+          name: "monkey",
+          type: "troop",
+          health: 100,
+          maxHealth: 100,
+          damage: 200,
+          attackRadius: 40,
+          speed: 100,
+          attackSpeed: 1.2,
+        },
+        {
+          sprite: listOfAllSprites.fireball,
+          cost: 5,
+          name: "fireball",
+          type: "spell",
+          health: 0,
+          maxHealth: 0,
+          damage: 200,
+          attackRadius: 100,
+          speed: 20,
+          attackSpeed: 1.2,
+        },
+      ];
+
+      const cardSpacing = 10;
+      const cardWidth = 80;
+      const cardHeight = 100;
+
+      const cardObjects: any[] = [];
+
+      // A container to hold all the cards, making them easy to position as a group
+      const cardContainer = uiPanel.add([
+        k.pos(k.center().x, 10), // Position the whole deck
+        k.anchor("top"),
+      ]);
+
+       playerDeck.forEach((cardData, i) => {
+        // Calculate the position for each card
+        const xPos = i * (cardWidth + cardSpacing);
+
+        // Add the card frame
+        const card = cardContainer.add([
+          k.rect(cardWidth, cardHeight, { radius: 8 }),
+          k.pos(xPos, 0),
+          k.outline(2, k.WHITE),
+          k.color(80, 80, 100),
+          k.area(), // Make it clickable
+          "card", // Add a tag to identify it
+        ]);
+
+        (card as any).cardData = cardData;
+
+        cardObjects.push(card);
+
+        // Add the character sprite inside the card
+        card.add([
+          cardData.sprite,
+          k.pos(card.width / 2, card.height / 2 - 10),
+          k.anchor("center"),
+          k.scale(2),
+          "card-icon",
+        ]);
+
+        // Add the coconut cost bubble
+        const costBubble = card.add([
+          listOfAllSprites.coconut,
+          k.pos(15, card.height - 15),
+          k.scale(1.2),
+          k.anchor("center"),
+          k.color(255, 0, 255),
+        ]);
+
+        // Add the cost text inside the bubble
+        costBubble.add([
+          k.text(String(cardData.cost), { size: 12 }),
+          k.anchor("center"),
+          k.pos(0, 0),
+          k.color(k.BLACK),
+        ]);
+      });
+
+
+
             let currentDrag: any = null;
             let originalCard: any = null;
 
@@ -590,13 +790,33 @@ export default function Game() {
                 // Check if placement is in the valid area (above the UI)
                 if (placementPos.y < uiPanel.pos.y) {
                     console.log(`Sending PLACE_CHARACTER for ${originalCard.cardData.name}`);
+                    // In your frontend Game.tsx file, inside onMouseRelease
+
+const normalizeBackwards = (screenPos: { x: number, y: number }) => {
+    const WORLD_WIDTH = 1000;
+    const WORLD_HEIGHT = 1800;
+
+    // Correctly scale the screen coordinate percentage to the world coordinate dimensions
+    const worldPos = {
+        x: WORLD_WIDTH * (screenPos.x / totalWidth),
+        y: WORLD_HEIGHT * (screenPos.y / totalHeight)
+    };
+
+    return worldPos;
+}
+
                     
+
+                    
+                    const normalizePlaced = normalizeBackwards(placementPos)
+
                     // FORWARD THE ACTION TO THE SERVER
                     ws.current?.send(JSON.stringify({
                         type: "PLACE_CHARACTER",
                         cardName: originalCard.cardData.name,
-                        position: { x: placementPos.x, y: placementPos.y },
+                        position: { x: normalizePlaced.x, y: normalizePlaced.y },
                     }));
+
                     
                     // The client DOES NOT check for coconuts or create the character.
                     // It just sends the request and waits for the next GAME_STATE_UPDATE.
@@ -610,36 +830,137 @@ export default function Game() {
                 currentDrag = null;
                 originalCard = null;
             });
+
+            k.onMousePress(() => {
+        // Don't start a new drag if one is already happening
+        if (currentDrag) return;
+        // console.log("this was triggerd", k.get("card"));
+        // Get the mouse position once
+        const mpos = k.mousePos();
+
+        // Check every object with the "card" tag
+        cardObjects.forEach((card) => {
+        //   console.log("the card exist right");
+          // THE FIX: Manually check if the mouse position is inside the card's area
+          if (card.isHovering()) {
+            // console.log("Manual hover check successful!");
+
+            // --- This is your original drag logic, it can now run ---
+
+            const icon = card.cardData;
+
+            // console.log("this is the icon we found", icon.sprite);
+            originalCard = card;
+
+            currentDrag = k.add([
+              icon.sprite,
+              k.area(),
+              k.pos(mpos), // Start the drag at the current mouse position
+              k.anchor("center"),
+              k.z(5),
+            ]);
+            if (icon.type === "spell") {
+
+                // We need to add a transparent circle to do this
+                const circle = currentDrag.add([
+                    // currentDrag.center(),
+                    k.circle(icon.attackRadius),
+                    // k.color(0,0,0),
+                    // k.outline(2, k.rgb(0, 0, 255)),
+                    k.area(),
+                    // k.color(255, 255, 255),
+                    k.anchor('center')
+                ])
+
+                // circle.color.a = 0
+            }
+
+            originalCard.color = k.rgb(128, 128, 128);
+
+            // Important: exit the loop once we've found a card to drag
+            return;
+          }
+        });
+      });
+
+
+            k.onMouseMove((pos: any, delta: any) => {
+        // defensively resolve the entity returned by k.get("cursor")
+
+        if (currentDrag) {
+        //   console.log("we r moving!");
+          currentDrag.pos = k.mousePos();
+        }
+
+        const found = (k.get as any)("cursor");
+        const entity = Array.isArray(found) ? found[0] : found;
+        if (!entity) return;
+
+        // Try common movement APIs; fall back to setting x/y
+        try {
+          if (typeof entity.moveTo === "function") {
+            // accepts (x, y)
+            (entity as any).moveTo(pos.x, pos.y);
+            return;
+          }
+
+          if (typeof entity.pos === "function") {
+            // some kaplay wrappers use pos(x,y)
+            (entity as any).pos(pos.x, pos.y);
+            return;
+          }
+
+          // array-wrapped entity
+          if (entity[0] && typeof entity[0].moveTo === "function") {
+            entity[0].moveTo(pos.x, pos.y);
+            return;
+          }
+
+          // fallback: set properties directly
+          (entity as any).x = pos.x;
+          (entity as any).y = pos.y;
+        } catch (e) {
+          // ignore any runtime errors from unknown shapes
+        }
+      });
+
+
+
+            
+
+            
             
             // onMousePress and onMouseMove for dragging visuals can remain the same
             // ...
         });
 
+        
+
         k.go("game");
 
-        (kaplayInstance.current as any).synchronizeGameState = synchronizeGameState;
+        // (kaplayInstance.current as any).synchronizeGameState = synchronizeGameState;
    
-      }
-
-      if (socketMessage !== null && kaplayInstance.current?.synchronizeGameState) {
-         console.log("we are calling the syncrhornize gamestate here")
-        kaplayInstance.current.synchronizeGameState(socketMessage);
-        setSocketMessage(null); // Reset after processing
-      }
-
       
 
-        // --- 5. CLEANUP LOGIC ---
-    },[hasStarted, socketMessage])
+
+    },[hasStarted])
 
 
 
 
+    // useEffect(() => {
+    //     // Check if there's a message and if the game engine is ready
+    //     if (stateQueue.current && kaplayInstance.current?.synchronizeGameState) {
+    //         console.log("SYNCING GAME STATE");
+    //         kaplayInstance.current.synchronizeGameState(socketMessage);
+    //         // Optional: You might not need to setSocketMessage(null) if you're okay
+    //         // with re-syncing the last state on other re-renders, but it can be cleaner.
+    //     }
+    // }, [socketMessage]); // Dependency: only runs when `socketMessage` changes
 
 
 
 
-    
     useEffect(() => {
 
 
