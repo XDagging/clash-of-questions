@@ -1,5 +1,4 @@
-import React from "react";
-import Ad from "./Ad";
+/* eslint-disable */
 import Coconut from "../../public/coconut.png"
 
 

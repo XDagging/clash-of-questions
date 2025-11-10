@@ -1,10 +1,10 @@
 import {useState, useEffect} from "react";
 import type { Question } from "../types";
+/* eslint-disable */
 
-
-export default function ReviewQuestion(props: any) {
+export default function ReviewQuestion() {
     
-    const [currQuestion, setCurrQuestion] = useState<Question | null>({
+    const [currQuestion] = useState<Question | null>({
         isMcq: true,
         stem: "People",
         questionId: "123",

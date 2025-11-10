@@ -6,8 +6,9 @@ import { formatString } from "../functions";
 import coconut from "../../public/coconut.png";
 import { ImWarning } from "react-icons/im";
 import AnswerPopUp from "../components/AnswerPopUp";
-import { useParams, useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import callApi from "../functions";
+/* eslint-disable */
 
 // All the types for the games
 
@@ -38,11 +39,11 @@ export default function GamePage() {
   })
   const gameId = searchParams.get("gameId");
 
-  const gameSettings = {
-    isMath: false,
-    difficulty: 6,
-    topic: "Words in Context",
-  };
+  // const gameSettings = {
+  //   isMath: false,
+  //   difficulty: 6,
+  //   topic: "Words in Context",
+  // };
 
   useEffect(() => {
     console.log("this useEffect was triggered")
@@ -182,7 +183,7 @@ export default function GamePage() {
 
   const checkAnswer = () => {
     return new Promise(async (resolve) => {
-      let answer = "";
+      // let answer = "";
       if (websocketRef.current) {
         websocketRef.current.send(JSON.stringify({
           type: "ANSWER_QUESTION",

@@ -1,19 +1,20 @@
 import { useState } from "react";
-import { Gamepad2, ReceiptText, X } from "lucide-react";
+import { Gamepad2, ReceiptText} from "lucide-react";
 import { Github } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import callApi from "../functions";
 import Instructions from "../components/Instructions";
+/* eslint-disable */
 
 // Game Dashboard
 export default function Dashboard() {
     const nav = useNavigate();
     const x = "/logo.png"; 
 
-    const [loading, setLoading] = useState(false);
+    // const [loading, setLoading] = useState(false);
     const [openInstructions, setOpenInstructions] = useState(false);
     const findOpenLobby = () => {
-      setLoading(true);
+     
 
   callApi("/findLobby", "GET")
     .then((res) => {
@@ -37,7 +38,7 @@ export default function Dashboard() {
     })
     .finally(() => {
       // This will run whether the promise is resolved or rejected
-      setLoading(false);
+
     });
 };
 

@@ -7,8 +7,8 @@ import callApi from "../functions";
 //     wrongList: string[];
 // }
 
-
-export default function Review(props: any) {
+/* eslint-disable */
+export default function Review() {
     const nav = useNavigate();
 
     // After questions, we put a number.

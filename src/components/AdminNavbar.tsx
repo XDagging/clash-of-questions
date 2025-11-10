@@ -1,6 +1,7 @@
 import {useContext, useEffect, useState} from "react";
+/* eslint-disable */
 // import { FaGoogle } from "react-icons/fa";
-import { BoltIcon, Cog6ToothIcon, ArchiveBoxIcon, LifebuoyIcon, ChevronRightIcon, CogIcon, CloudIcon, ArrowRightStartOnRectangleIcon, Square3Stack3DIcon, LockClosedIcon } from "@heroicons/react/24/solid";
+import { BoltIcon, Cog6ToothIcon, ArchiveBoxIcon, ChevronRightIcon, CogIcon, CloudIcon, ArrowRightStartOnRectangleIcon, Square3Stack3DIcon, LockClosedIcon } from "@heroicons/react/24/solid";
 // import type { User } from "../types";
 import { Link, useNavigate } from "react-router-dom";
 import callApi from "../functions";

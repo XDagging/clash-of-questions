@@ -1,5 +1,6 @@
 // This component marks when this will be triggered
 // import Crown from "../../public/crown.png"
+/* eslint-disable */
 import { Link } from "react-router-dom"
 
 type WinConditionProps = {

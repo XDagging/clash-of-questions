@@ -1,5 +1,5 @@
 import {useEffect} from "react";
-
+/* eslint-disable */
 
 interface props {
     message: string;

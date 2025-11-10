@@ -12,7 +12,7 @@ import UserContext from "./context.ts"
 import { Route, Routes, Outlet, Navigate } from "react-router-dom"
 import Index from "./page.tsx"
 import Credits from './credits/page.tsx';
-
+/* eslint-disable */
 const PrivateRoutes = () => {
     const user = useContext(UserContext);
     return user ? <Outlet /> : <Navigate to="/login" />

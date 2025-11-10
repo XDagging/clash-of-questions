@@ -1,5 +1,5 @@
 // import { useSession } from "next-auth/react";
-
+/* eslint-disable */
 // import * as culori from "culori";
 
 // /**

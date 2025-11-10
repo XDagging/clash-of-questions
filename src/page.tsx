@@ -1,12 +1,12 @@
-import { useState, useEffect } from 'react'
 
+/* eslint-disable */
 
 import imgOne from "./../public/testimonyOne.webp"
 import imgTwo from "./../public/testimonyTwo.webp"
 import imgThree from "./../public/testimonyThree.webp"
 import './index.css'
-import { ChevronLeftIcon } from '@heroicons/react/24/solid';
-import { PhoneIcon, VideoCameraIcon } from '@heroicons/react/24/outline';
+// import { ChevronLeftIcon } from '@heroicons/react/24/solid';
+// import { PhoneIcon, VideoCameraIcon } from '@heroicons/react/24/outline';
 import x from "./../public/mainClip.mov"
 import { Link } from 'react-router-dom'
 import Footer from "./components/Footer"

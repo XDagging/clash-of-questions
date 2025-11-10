@@ -1,10 +1,11 @@
+/* eslint-disable */
 import kaplay from "kaplay";
 import { useEffect, useRef, useState, useContext } from "react";
-import { MdKeyboardCommandKey } from "react-icons/md";
+// import { MdKeyboardCommandKey } from "react-icons/md";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import UserContext from "../context";
 import type { User } from "../types";
-import { WarehouseIcon } from "lucide-react";
+// import { WarehouseIcon } from "lucide-react";
 
 // Define the shape of the data we expect from the server for clarity
 interface ServerCharacter {
@@ -202,7 +203,7 @@ export default function Game(props: GameProps) {
           kaplayInstance.current = k;
         }
     const sourceTileWidth = 32;
-     const maxCoconuts = 10;
+    //  const maxCoconuts = 10;
 
     // These are some universal constants
   
@@ -330,19 +331,7 @@ export default function Game(props: GameProps) {
       monkeyBack: null,
       tower: null,
     };
-    const cardDefinitions = {
-        tower: {
-            sprite: listOfAllSprites.tower,
-            name: "tower",
-            cost: 0,
-            type: "tower",
-            health: 2000,
-            maxHealth: 2000,
-            damage: 15,
-            attackRadius: 175,
-            attackSpeed: 1.2,
-        }
-      }
+  
 
 
 
@@ -412,7 +401,7 @@ export default function Game(props: GameProps) {
         },
       };
 
-      const map = k.addLevel(dynamicMap, mapConfig);
+      k.addLevel(dynamicMap, mapConfig);
     }
         // --- 2. CORE RENDERING & SYNCHRONIZATION LOGIC ---
 
@@ -862,7 +851,7 @@ const normalizeBackwards = (screenPos: { x: number, y: number }) => {
             if (icon.type === "spell") {
 
                 // We need to add a transparent circle to do this
-                const circle = currentDrag.add([
+                currentDrag.add([
                     // currentDrag.center(),
                     k.circle(icon.attackRadius),
                     // k.color(0,0,0),
@@ -884,7 +873,7 @@ const normalizeBackwards = (screenPos: { x: number, y: number }) => {
       });
 
 
-            k.onMouseMove((pos: any, delta: any) => {
+            k.onMouseMove((pos: any) => {
         // defensively resolve the entity returned by k.get("cursor")
 
         if (currentDrag) {

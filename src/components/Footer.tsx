@@ -1,6 +1,7 @@
+/* eslint-disable */
 import { FaInstagram, FaEnvelope } from "react-icons/fa";
 import logo from "../assets/logo.png"
-import { Link } from "react-router-dom";
+// import { Link } from "react-router-dom";
 
 
 

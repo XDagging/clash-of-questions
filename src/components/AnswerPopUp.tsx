@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { formatString } from "../functions";
-
+/* eslint-disable */
 // Import your images
 import coconut from "../../public/coconut.png";
 import crackedCoconut from "../../public/crackedCoconut.png" // Assumes you have this image

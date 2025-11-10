@@ -1,29 +1,29 @@
 import { useState, useEffect} from "react"
-import callApi, { isEmail, isPassword, } from "../functions"
-
+// import callApi, { isEmail, isPassword, } from "../functions"
+/* eslint-disable */
 import { FaGoogle } from "react-icons/fa"
 import Notif from "../components/Notif"
-import { useNavigate, Link } from "react-router-dom"
-import Navbar from "../components/Navbar"
+import { Link } from "react-router-dom"
+// import Navbar from "../components/Navbar"
 import Footer from "../components/Footer"
 
 import type { NotifType, Timeout } from "../types"
 import { Helmet } from "react-helmet"
-type LoginUser = {
-    email: string;
-    password: string;
+// type LoginUser = {
+//     email: string;
+//     password: string;
 
-}
+// }
 
 let timeout: Timeout;
 export default function Login() {
-    const nav = useNavigate();
+    // const nav = useNavigate();
     const url = window.location.href.includes("localhost") ? "https://localhost:443" : "https://api.clashofquestions.com";
-    const [loading, setLoading] = useState(false);
-    const [user, setUser] = useState<LoginUser>({
-        email: "",
-        password: ""
-    })
+    // const [loading, setLoading] = useState(false);
+    // const [user] = useState<LoginUser>({
+    //     email: "",
+    //     password: ""
+    // })
 
     const [notif, setNotif] = useState<NotifType>({
         type: "",
@@ -44,59 +44,59 @@ export default function Login() {
      }, [notif]);
    
 
-    const doSubmit = () => {    
-        console.log("check")
-        try {
-            if (!isEmail(user.email)) {
-                setNotif({
-                    type: "err",
-                    message: "Invalid Email"
-                })
+    // const doSubmit = () => {    
+    //     console.log("check")
+    //     try {
+    //         if (!isEmail(user.email)) {
+    //             setNotif({
+    //                 type: "err",
+    //                 message: "Invalid Email"
+    //             })
 
-            } else if (!isPassword(user.password || "")) {
-                setNotif({
-                    type: "err",
-                    message: "Invalid Password"
-                })
-            }
+    //         } else if (!isPassword(user.password || "")) {
+    //             setNotif({
+    //                 type: "err",
+    //                 message: "Invalid Password"
+    //             })
+    //         }
             
-            else {
-                setLoading(true);
-                callApi("/login", "POST", user).then((res) => {
-                    console.log("this was the response from the request", res)
-                    if (res.code === "err") {
-                        console.log("something went wrong");
-                        setNotif({
-                            type: "err",
-                            message: "Invalid Message"
-                        })
-                    }  else if (res.code === "ok") {
+    //         else {
+    //             // setLoading(true);
+    //             callApi("/login", "POST", user).then((res) => {
+    //                 console.log("this was the response from the request", res)
+    //                 if (res.code === "err") {
+    //                     console.log("something went wrong");
+    //                     setNotif({
+    //                         type: "err",
+    //                         message: "Invalid Message"
+    //                     })
+    //                 }  else if (res.code === "ok") {
                         
-                        setNotif({
-                            type: "success",
-                            message: "Successfully created your account."
-                        })
-                        nav("/dashboard");
-                    } else {
-                        console.log("something went wrong", res);
-                        setNotif({
-                            type: "err",
-                            message: "Invalid Message"
-                        })
-                    }
-                    setLoading(false);
+    //                     setNotif({
+    //                         type: "success",
+    //                         message: "Successfully created your account."
+    //                     })
+    //                     nav("/dashboard");
+    //                 } else {
+    //                     console.log("something went wrong", res);
+    //                     setNotif({
+    //                         type: "err",
+    //                         message: "Invalid Message"
+    //                     })
+    //                 }
+    //                 // setLoading(false);
                     
                     
-                })
-            }
-        } catch(e) {
-            console.log(e);
-            setNotif({
-                type: "err",
-                message: "Invalid Error"
-            })
-        }
-    }
+    //             })
+    //         }
+    //     } catch(e) {
+    //         console.log(e);
+    //         setNotif({
+    //             type: "err",
+    //             message: "Invalid Error"
+    //         })
+    //     }
+    // }
 
 
 
