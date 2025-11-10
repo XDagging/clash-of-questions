@@ -7,7 +7,7 @@ import imgThree from "./../public/testimonyThree.webp"
 import './index.css'
 // import { ChevronLeftIcon } from '@heroicons/react/24/solid';
 // import { PhoneIcon, VideoCameraIcon } from '@heroicons/react/24/outline';
-import x from "./../public/mainClip.mov"
+// import x from "./../public/mainClip.mov"
 import { Link } from 'react-router-dom'
 import Footer from "./components/Footer"
 import { FiGithub } from 'react-icons/fi'
@@ -88,7 +88,7 @@ function App() {
              
                     <div className='w-full bg-base-100'>
                         <video autoPlay className='h-full object-cover aspect-video rounded-box' playsInline muted loop controlsList="nofullscreen">
-                            <source src={x}></source>
+                            <source src={"https://clashofquestions-media.s3.us-east-1.amazonaws.com/mainClip+(1).mov"}></source>
                         </video>
                         <p className='mt-2 text-center font-1 italic'>Real gameplay against real people. Real stakes. Real learning.</p>
 
