@@ -86,6 +86,7 @@ export default function Game(props: GameProps) {
     //   return; // Already connected
     // }
     try {
+      const endpoint = (window.location.href.includes("localhost")) ?  "wss://localhost:443" : "wss://api.clashofquestions.com";
       console.log("we just tried connecting to the websocket");
       ws.current = new WebSocket("wss://localhost:443"); // Use your actual server URL
       props.websocketRef.current = ws.current;
