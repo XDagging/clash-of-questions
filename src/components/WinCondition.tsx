@@ -89,8 +89,8 @@ export default function WinCondition(props: WinConditionProps) {
                 
 
                 <div className=" gap-2 flex-col mx-auto flex mt-4">
-                    <Link to="/review" className="btn btn-primary font-1 btn-lg">Review Concepts</Link>
-                    <Link to="/dashboard" className="btn btn-secondary font-1 btn-lg">Play Again</Link>
+                    <a href="/review" className="btn btn-primary font-1 btn-lg">Review Concepts</a>
+                    <a href="/dashboard" className="btn btn-secondary font-1 btn-lg">Play Again</a>
                 </div>
                 </section>
                

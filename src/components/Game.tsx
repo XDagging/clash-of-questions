@@ -227,10 +227,42 @@ export default function Game(props: GameProps) {
     k.loadSprite("shooterMonkeyFrontAnimationShooting","shooterMonkeyShootingAnimationFront.png", {
       sliceX: 4,
       anims: {
-        "shoot_front": {from: 0, to: 3, speed: 10}
+        "shoot_front": {from: 0, to: 3, speed: 10, loop: true}
       }
     })
 
+    k.loadSprite("monkeyFrontAnimationShooting", "monkeyAttackingFront.png", {
+      sliceX: 3,
+      anims: {
+        "shoot_front": {from:0, to: 2, speed: 10, loop: true}
+      }
+    })
+
+    k.loadSprite("monkeyBackAnimationShooting", "monkeyAttackingBack.png", {
+      sliceX: 3,
+      anims: {
+        "shoot_back": {from:0, to: 2, speed: 10, loop: true}
+      }
+    })
+
+
+
+
+
+    k.loadSprite("monkeyBackWalking", "monkeyBackWalking.png", {
+      sliceX: 3,
+      anims: {
+        "walk_back": {from: 0, to: 2, speed: 10, loop: true}
+      }
+    })
+
+    k.loadSprite("monkeyFrontWalking", "monkeyFrontWalking.png", {
+      sliceX: 3,
+      anims: {
+        "walk_front": {from: 0, to: 2, speed: 10, loop: true}
+      }
+      
+    })
 
     k.loadSprite("shooterMonkeyBackWalking", "shooterMonkeyBackWalking.png", {
       sliceX: 3,
