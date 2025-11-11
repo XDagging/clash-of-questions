@@ -728,7 +728,7 @@ if (isMoving) {
         k.z(3), // Use z() to make sure UI is always on top
       ]);
 
-      const isPlayerOne = true;
+      // const isPlayerOne = true;
 
       const invalidTint = k.add([
       k.rect(totalWidth, totalHeight/2), // Same size as uiPanel   // Same position as uiPanel
