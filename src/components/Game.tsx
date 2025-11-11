@@ -31,6 +31,7 @@ interface GameStateUpdate {
 interface GameStart {
   type: "GAME_START";
   playerId: string;
+  isPlayerOne: boolean;
   // any other initial data...
 }
 
@@ -65,6 +66,8 @@ export default function Game(props: GameProps) {
   const [searchParams] = useSearchParams();
   const [hasStarted, setHasStarted] = useState(false);
   const kaplayInitialized = useRef(false);
+  const isPlayerOne = useRef<boolean>(null);
+  const playerSide = useRef<"BOTTOM" | "TOP" | null>(null);
   const kaplayInstance = useRef<any>(null);
   // Refs to hold persistent objects without causing re-renders
   const serverObjects = useRef(new Map<string, any>());
@@ -108,6 +111,7 @@ export default function Game(props: GameProps) {
         if (message.type === "GAME_START") {
           setHasStarted(true);
           localPlayerId.current = message.playerId;
+          isPlayerOne.current = message.isPlayerOne
           console.log(
             `🎉 Game started! This client is Player ID: ${localPlayerId.current}`
           );
@@ -434,6 +438,7 @@ export default function Game(props: GameProps) {
         },
       };
 
+    
       k.addLevel(dynamicMap, mapConfig);
     }
         // --- 2. CORE RENDERING & SYNCHRONIZATION LOGIC ---
@@ -468,20 +473,29 @@ export default function Game(props: GameProps) {
             spriteKey += direction;
         }
 
+      
+
         const normalizedPos = normalizePosition(serverChar.pos);
 
-        const charObj: any = k.add([
-            listOfAllSprites[spriteKey], // Now this is safe
+        const components: any[] = [
+            listOfAllSprites[spriteKey],
             k.pos(normalizedPos.x, normalizedPos.y),
             k.scale(2),
-            serverChar.isBackwards ? k.rotate(180): "",
-            // k.body(),
-            // k.area(),
             k.anchor("center"),
             isFriendly ? "friend" : "enemy",
+            // k.body(), // (uncomment if you add physics later)
+            // k.area(),   // (uncomment if you add physics later)
+        ];
 
-        ]);
+        // 2. Conditionally add the rotation component
+        // This works for BOTH players because the view is already flipped.
+        // An enemy tower is *always* at the top of the screen.
+        if (!isFriendly && serverChar.type === "tower") {
+            components.push(k.rotate(180));
+        }
 
+        // 3. Add the character with the complete list of components
+        const charObj: any = k.add(components);
         if (serverChar.maxHealth > 0) {
             const fullBar = charObj.add([
                 k.rect(charObj.width, 4),
@@ -508,11 +522,19 @@ export default function Game(props: GameProps) {
         function normalizePosition(objPos: {x: number, y: number}) {
           const WORLD_WIDTH = 1000;
           const WORLD_HEIGHT = 1800;
+          let serverX = objPos.x;
+          let serverY = objPos.y;
 
+          if (playerSide.current === "TOP") {
+                // Flip Y: An object at y=100 (top) should now be at y=1700 (bottom).
+                serverY = WORLD_HEIGHT -100 - objPos.y;
+                // Flip X: An object at x=100 (left) should now be at x=900 (right).
+                serverX = WORLD_WIDTH - objPos.x;
+            }
 
           const normalizedPos = {
-            x: totalWidth*(objPos.x/WORLD_WIDTH),
-            y: totalHeight*(objPos.y/WORLD_HEIGHT)
+            x: totalWidth*(serverX/WORLD_WIDTH),
+            y: totalHeight*(serverY/WORLD_HEIGHT)
 
           }
           // console.log("this is the normalized position", normalizedPos)
@@ -523,6 +545,43 @@ export default function Game(props: GameProps) {
 
         function synchronizeGameState(state: GameStateUpdate) {
         const k = kaplayInstance.current;
+
+        if (playerSide.current===null && localPlayerId.current && state.characters.length > 0) {
+            // Find one of our own towers to see where we are
+            const myTower = state.characters.find(c =>
+                c.ownerId === localPlayerId.current &&
+                c.type === "tower" // Assumes your towers have type "tower"
+            );
+
+            if (playerSide.current===null) {
+              console.log("we got to this if statement");
+              
+              if (isPlayerOne.current) {
+                playerSide.current = "BOTTOM"
+              } else {
+                playerSide.current = "TOP";
+              }
+             
+
+            }
+
+            if (myTower) {
+
+                 const WORLD_MIDPOINT_Y = 1800 / 2; // 900
+                console.log("we got to this if statement insdie myTower", myTower.pos.y > WORLD_MIDPOINT_Y)
+             
+                if (myTower.pos.y > WORLD_MIDPOINT_Y) {
+                    playerSide.current = "BOTTOM"; // We are P1 (default)
+                } else {
+                    playerSide.current = "TOP"; // We are P2 (needs flip)
+                }
+                console.log(`✅ Player side determined: ${playerSide.current}`);
+            }
+            // If no tower found yet, this will just run again on the next update
+        }
+
+
+
 
     
 
@@ -557,48 +616,79 @@ export default function Game(props: GameProps) {
 
         // console.log("this is the serverchar", serverChar.vel)
         const isMoving = serverChar.vel.x !== 0 || serverChar.vel.y !== 0;
+        let direction;
 
+
+        if (isPlayerOne.current) {
+          direction = serverChar.vel.y>0 ? "Front" : "Back";
+        } else {
+          direction = serverChar.vel.y>0 ? "Back" : "Front";
+        }
+
+        // const isFriendly = (serverChar.ownerId === localPlayerId.current);
 // === START: REPLACEMENT LOGIC ===
 
 if (isMoving) {
-    // 1. HANDLE MOVING CHARACTERS
-    const direction = serverChar.vel.y < 0 ? "Back" : "Front";
-    const animName = `walk_${direction.toLowerCase()}`;
-    
-    // Only switch animation if it's not already playing
-    if (localObj.curAnim() !== animName) {
-        localObj.use(k.sprite(serverChar.name + direction + "Walking"));
-        localObj.play(animName);
-    }
-} else {
-    // 2. HANDLE STATIONARY CHARACTERS (ATTACKING OR IDLE)
-    if (serverChar.animation.includes("Shooting")) {
-        // A. Handle attacking
-        const correspondingCommand: Record<string, string> = {
-            "FrontAnimationShooting": "shoot_front",
-            "BackAnimationShooting": "shoot_back",
-            "Shooting": "shoot", // For towers
-        };
-        const cmd = correspondingCommand[serverChar.animation];
+            // 1. HANDLE MOVING CHARACTERS
+            // The direction we see is based on friendly status, not absolute velocity.
+            // Friendly units always use "Front" (walking away from us).
+            // Enemy units always use "Back" (also walking away from us, from their side).
+            // Wait, this is confusing. Let's stick to:
+            // isFriendly = true: We see "Front" sprites
+            // isFriendly = false: We see "Back" sprites
+           
+            const animName = `walk_${direction.toLowerCase()}`;
 
-        if (cmd && localObj.curAnim() !== cmd) {
-            // The sprite name is composed, e.g., "giant" + "BackAnimationShooting"
-            localObj.use(k.sprite(serverChar.name + serverChar.animation));
-            localObj.play(cmd);
+            if (localObj.curAnim() !== animName) {
+                localObj.use(k.sprite(serverChar.name + direction + "Walking"));
+                localObj.play(animName);
+            }
+        } else {
+            // 2. HANDLE STATIONARY CHARACTERS (ATTACKING OR IDLE)
+            if (serverChar.animation.includes("Shooting")) {
+                // A. Handle attacking
+               // A. Handle attacking
+
+                // 1. Determine direction based on *relative* friendly status
+                const isFriendly = (serverChar.ownerId === localPlayerId.current);
+
+                let clientSpriteSuffix = ""; // The string to add to the sprite name
+                let cmd = "";                  // The animation command to play
+
+                if (serverChar.type === "tower") { 
+                    // Towers are simple: they don't have front/back
+                    clientSpriteSuffix = "Shooting"; // e.g., "towerShooting"
+                    cmd = "shoot";
+                } else {
+                    // Troops are directional
+                    if (!isFriendly) {
+                        clientSpriteSuffix = "FrontAnimationShooting"; // e.g., "giantFrontAnimationShooting"
+                        cmd = "shoot_front";
+                    } else {
+                        clientSpriteSuffix = "BackAnimationShooting"; // e.g., "giantBackAnimationShooting"
+                        cmd = "shoot_back";
+                    }
+                }
+
+                // 2. Build the full client-side sprite name
+                const clientAnimName = serverChar.name + clientSpriteSuffix;
+
+                // 3. Play the animation
+                console.log("this is the cmd", cmd, clientAnimName);
+                if (cmd && localObj.curAnim() !== cmd) {
+                    localObj.use(k.sprite(clientAnimName));
+                    localObj.play(cmd);
+                }
+            } else {
+                // B. Handle idle (Your original logic was already correct!)
+                let spriteKey = serverChar.name;
+                if (directionalCharacters.includes(serverChar.name)) {
+                    spriteKey +=  direction;
+                }
+                localObj.use(listOfAllSprites[spriteKey]);
+            }
         }
-    } else {
-        // B. Handle idle
-        let spriteKey = serverChar.name;
-        if (directionalCharacters.includes(serverChar.name)) {
-            // Determine facing direction based on last known velocity or default
-            // Assuming friendly units face front when idle
-            const isFriendly = (serverChar.ownerId === localPlayerId.current);
-            spriteKey += isFriendly ? "Front" : "Back";
-        }
-        // Use the static sprite from the list
-        localObj.use(listOfAllSprites[spriteKey]);
-    }
-}
+        // === 👆 END OF REPLACEMENT BLOCK ===
     }
 
     for (const [id, localObj] of serverObjects.current.entries()) {
@@ -637,6 +727,17 @@ if (isMoving) {
 
         k.z(3), // Use z() to make sure UI is always on top
       ]);
+
+      const isPlayerOne = true;
+
+      const invalidTint = k.add([
+      k.rect(totalWidth, totalHeight/2), // Same size as uiPanel   // Same position as uiPanel
+      k.color(k.RED),                        // It's red
+      k.opacity(0.4),                        // Semi-transparent
+      k.fixed(),                             // Stays with the UI
+      k.z(4),                                // On top of UI (z=3), but below drag sprite (z=5)
+  ]);
+  invalidTint.hidden = true; // Start hidden
 
       // --- 2. The Coconut Bar ---
       const maxCoconuts = 10;
@@ -807,6 +908,8 @@ if (isMoving) {
             k.onMouseRelease(() => {
                 if (!currentDrag) return;
 
+                invalidTint.hidden = true;
+
                 const placementPos = k.mousePos();
 
                 // Check if placement is in the valid area (above the UI)
@@ -818,10 +921,22 @@ const normalizeBackwards = (screenPos: { x: number, y: number }) => {
     const WORLD_WIDTH = 1000;
     const WORLD_HEIGHT = 1800;
 
+    let localX = screenPos.x;
+    let localY = screenPos.y;
+
+
+    if (playerSide.current === "TOP") {
+      localY = totalHeight - 100 - screenPos.y;
+      localX = totalWidth - screenPos.x;
+    }
+
+
+
+
     // Correctly scale the screen coordinate percentage to the world coordinate dimensions
     const worldPos = {
-        x: WORLD_WIDTH * (screenPos.x / totalWidth),
-        y: WORLD_HEIGHT * (screenPos.y / totalHeight)
+        x: WORLD_WIDTH * (localX / totalWidth),
+        y: WORLD_HEIGHT * (localY / totalHeight)
     };
 
     return worldPos;
@@ -911,7 +1026,20 @@ const normalizeBackwards = (screenPos: { x: number, y: number }) => {
 
         if (currentDrag) {
         //   console.log("we r moving!");
-          currentDrag.pos = k.mousePos();
+
+          
+   
+
+          const mpos = k.mousePos(); //
+          console.log("this is what current drag is", originalCard.cardData.type);
+
+          if (originalCard.cardData.type !== "spell") {
+            invalidTint.hidden = false;
+          }
+
+      
+          currentDrag.pos = mpos;
+          
         }
 
         const found = (k.get as any)("cursor");
