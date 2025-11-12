@@ -1,13 +1,17 @@
-import { useState } from "react";
-import { Gamepad2, ReceiptText} from "lucide-react";
+import { useState, useContext } from "react";
+import { Gamepad2, ReceiptText, TrophyIcon} from "lucide-react";
 import { Github } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import callApi from "../functions";
+import UserContext from "../context";
 import Instructions from "../components/Instructions";
 /* eslint-disable */
 
 // Game Dashboard
 export default function Dashboard() {
+    
+    const user = useContext(UserContext) !== null ? JSON.parse(useContext(UserContext) as any) : {} as any; 
+    console.log("this is the user tab", user)
     const nav = useNavigate();
     const x = "/logo.png"; 
 
@@ -64,7 +68,8 @@ export default function Dashboard() {
           <div className="hero-content flex flex-col gap-4 items-center">
 
             <img src={x} className="h-40 mx-auto" alt="DDD gif" />
-            <h1 className="text-8xl font-2 mx-auto"><span className="text-primary">C</span>O<span className="text-primary">C</span></h1>
+            <h1 className="text-8xl font-2 mx-auto"><span className="text-primary">C</span>O<span className="text-primary">Q</span></h1>
+            <p className="font-2 font-bold flex flex-row items-center justify-center gap-1"><TrophyIcon className="size-4" />{user?.trophies}</p>
             <a href="https://github.com/XDagging/clash-of-questions" className="font-2 flex flex-row items-center gap-2">We're open source on <Github /></a>
             <div className="mt-10 flex flex-col w-full gap-2">
               <button onClick={findOpenLobby} className="btn animate-bounce btn-primary font-2 text-lg scale-150 my-3">Join a Lobby <Gamepad2 /></button>

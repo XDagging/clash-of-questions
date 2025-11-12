@@ -1,13 +1,15 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useContext } from "react";
 import Game from "../components/Game";
 import MultipleChoice from "../components/MultipleChoice";
 import { BiMicrophone } from "react-icons/bi";
 import { formatString } from "../functions";
 import coconut from "../../public/coconut.png";
 import { ImWarning } from "react-icons/im";
+import Walkout from "../components/Walkout";
 import AnswerPopUp from "../components/AnswerPopUp";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import callApi from "../functions";
+import UserContext from "../context";
 /* eslint-disable */
 
 // All the types for the games
@@ -20,11 +22,18 @@ type Player = {
 };
 import type { Question } from "../types";
 import WinCondition from "../components/WinCondition";
-
+let interval: any = null;
 export default function GamePage() {
+  const user = useContext(UserContext) !== null ? JSON.parse(useContext(UserContext) as any) : {} as any; 
+
   const nav = useNavigate();
   const [searchParams] = useSearchParams();
   const websocketRef = useRef<null | WebSocket>(null);
+  const [etaTimer, setEtaTimer] = useState(4);
+  const [opponentStats, setOpponentStats] = useState({
+    name: "",
+    trophies: 0,
+  })
   const clockRef = useRef<number>(0);
   // const websocketState = useRef<"IN-GAME" | "LOCATING-GAME">("LOCATING-GAME");
   // A correct answer adds .1 to the coconut multiplier
@@ -39,11 +48,28 @@ export default function GamePage() {
   })
   const gameId = searchParams.get("gameId");
 
-  // const gameSettings = {
-  //   isMath: false,
-  //   difficulty: 6,
-  //   topic: "Words in Context",
-  // };
+
+  useEffect(() => {
+    if (interval === null) {
+       interval= setInterval(() => {
+      setEtaTimer((prev) => {
+        if (prev <= 0) {
+          clearInterval(interval);
+          return prev;
+        }
+        return prev-1
+      
+      });
+
+
+    },1000)
+    }
+   
+
+  },[])
+
+
+
 
   useEffect(() => {
     console.log("this useEffect was triggered")
@@ -255,6 +281,14 @@ export default function GamePage() {
         <WinCondition studyingTime={clockRef.current} allQuestionsWrong={allWrongQuestions} allQuestionsRight={allRightQuestions} hasWon={hasWon}/>
       )}
       <div className="grid grid-cols-6 items-start relative justify-start w-screen h-full">
+
+
+        {(opponentStats.name !== "") && (
+          <Walkout opponentOne={ {name: user.name, trophies: user.trophies} } opponentTwo={opponentStats} />
+        )}
+        
+
+
         {popupAnswer && typeof wasRight == "boolean" && (
           <AnswerPopUp
             answer={popupAnswer}
@@ -263,8 +297,17 @@ export default function GamePage() {
           />
         )}
 
-        <div className="col-span-3 w-full h-full">
-          <Game setHasWon={setHasWon} setUpdateQuestion={setUpdateQuestion} websocketRef={websocketRef} />
+        <div className={"col-span-3 w-full h-full flex flex-row items-center justify-center " + `${etaTimer !== 0 ? "h-screen" : ""}`}>
+          <Game setHasWon={setHasWon} setUpdateQuestion={setUpdateQuestion} websocketRef={websocketRef} setOpponentStats={setOpponentStats} />
+          {(etaTimer!==0) && (
+            <div className="text-center text-2xl">
+              <p className="font-2">Searching for your game...</p>
+              <p className="font-2">ETA: {etaTimer} seconds</p>
+
+            </div>
+          )}
+        
+     
         </div>
 
         <div className="col-span-3 w-full h-full relative">

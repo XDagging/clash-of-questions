@@ -12,6 +12,7 @@ interface ServerCharacter {
   id: string;
   ownerId: string;
   name: string;
+  level: number;
   pos: { x: number; y: number };
   vel: { x: number; y: number };
   health: number;
@@ -32,6 +33,8 @@ interface GameStart {
   type: "GAME_START";
   playerId: string;
   isPlayerOne: boolean;
+  opponentName: string;
+  opponentTrophies: number;
   // any other initial data...
 }
 
@@ -53,9 +56,10 @@ interface WinCondition {
 }
 
 interface GameProps {
-  websocketRef: any
-  setUpdateQuestion: any
-  setHasWon: any
+  websocketRef: any;
+  setUpdateQuestion: any;
+  setHasWon: any;
+  setOpponentStats: any;
 
 }
 
@@ -111,7 +115,15 @@ export default function Game(props: GameProps) {
         if (message.type === "GAME_START") {
           setHasStarted(true);
           localPlayerId.current = message.playerId;
-          isPlayerOne.current = message.isPlayerOne
+          isPlayerOne.current = message.isPlayerOne;
+          console.log("this is what we sent opponentStats to",{
+            name: message.opponentName,
+            trophies: message.opponentTrophies
+          })
+          props.setOpponentStats({
+            name: message.opponentName,
+            trophies: message.opponentTrophies
+          })
           console.log(
             `🎉 Game started! This client is Player ID: ${localPlayerId.current}`
           );
@@ -198,6 +210,8 @@ export default function Game(props: GameProps) {
         const heightOfUI = 120;
         const totalWidth = window.innerWidth / 2;
         const totalHeight = window.innerHeight;
+
+        
         const k = kaplayInstance.current===null ? kaplay({
             width: totalWidth,
             height: totalHeight,
@@ -258,7 +272,7 @@ export default function Game(props: GameProps) {
       anims: {
         "walk_back": {from: 0, to: 2, speed: 10, loop: true}
       }
-    })
+    })  
 
     k.loadSprite("monkeyFrontWalking", "monkeyFrontWalking.png", {
       sliceX: 3,
@@ -462,7 +476,8 @@ export default function Game(props: GameProps) {
     // **CORRECTED FUNCTION**
     function createCharacterObject(serverChar: ServerCharacter) {
 
-        console.log("owner id of serverchar", serverChar.ownerId)
+      
+        console.log("This is what serverChar is", serverChar)
         const isFriendly = (serverChar.ownerId === localPlayerId.current);
         const k = kaplayInstance.current;
 
@@ -487,6 +502,10 @@ export default function Game(props: GameProps) {
             // k.area(),   // (uncomment if you add physics later)
         ];
 
+        if (serverChar.type !== "spell") {
+          // Lets add the level multiplier next to the guy.
+        }
+
         // 2. Conditionally add the rotation component
         // This works for BOTH players because the view is already flipped.
         // An enemy tower is *always* at the top of the screen.
@@ -496,6 +515,35 @@ export default function Game(props: GameProps) {
 
         // 3. Add the character with the complete list of components
         const charObj: any = k.add(components);
+        
+        
+        console.log("this is waht serverchar is", serverChar.level);
+
+        if (serverChar.type === "troop") {
+          const levelBox = charObj.add([
+          k.rect(10, 10),
+          k.pos(-20, -charObj.height/2 - 4),
+          k.anchor("center"),
+          k.color(k.BLACK)
+        ]);
+
+          const innerBox = levelBox.add([
+            k.rect(levelBox.width -2, levelBox.height -2),
+            k.pos(0,0),
+            k.anchor("center"),
+            k.color(isFriendly ? k.GREEN: k.RED)
+          ])
+        innerBox.add([
+          k.text(serverChar.level, { size: 6}),
+          k.anchor("center"),
+          k.pos(0,0),
+          k.color(k.WHITE),
+        ])
+        }
+      
+
+        // levelBox.
+
         if (serverChar.maxHealth > 0) {
             const fullBar = charObj.add([
                 k.rect(charObj.width, 4),

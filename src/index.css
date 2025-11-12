@@ -13,3 +13,121 @@
 .font-2 {
     font-family: 'VT323', monospace;
 }
+html, body {
+            height: 100%;
+            width: 100%;
+            margin: 0;
+            font-family: 'Luckiest Guy', cursive; /* Use the game-like font */
+            color: white;
+        }
+
+        /* The main container, inspired by the arena background */
+        .battle-screen {
+            height: 100%;
+            width: 100%;
+            /* Gradient to mimic the red/purple fog from your image */
+            background: radial-gradient(circle, #5a4a70 0%, #3a2a50 100%);
+            position: relative;
+            /* This is CRITICAL: it hides the elements before they slide in */
+            overflow: hidden; 
+        }
+
+        /* --- Opponent Styling (Top) --- */
+        .opponent-container {
+            position: absolute;
+            top: 15%; /* Position near the top */
+            width: 100%;
+            
+            /* Banner styling (like the green banner for "RAMON") */
+            background: #28a745; /* Green */
+            padding: 10px 0;
+            text-align: center;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            border-top: 4px solid #3bff7b;
+            border-bottom: 4px solid #1a6d30;
+
+            /* Animation setup */
+            /* 1. Start off-screen to the left */
+            transform: translateX(-100vw);
+            /* 2. Animate 'slideInOpponent' for 0.5s */
+            /* 3. 'ease-out' makes it slow down at the end */
+            /* 4. '0.6s' delay - this makes it the THIRD to animate */
+            /* 5. 'forwards' keeps it in the final position */
+            animation: slideInOpponent 0.5s ease-out 0.6s forwards;
+        }
+
+        /* --- Player Styling (Bottom) --- */
+        .player-container {
+            position: absolute;
+            bottom: 15%; /* Position near the bottom */
+            width: 100%;
+            
+            /* Banner styling (like the blue wave banner for "Robo") */
+            background: #007bff; /* Blue */
+            padding: 10px 0;
+            text-align: center;
+            box-shadow: 0 -4px 8px rgba(0,0,0,0.3);
+            border-top: 4px solid #4daaff;
+            border-bottom: 4px solid #004a9e;
+
+            /* Animation setup */
+            /* 1. Start off-screen to the left */
+            transform: translateX(-100vw);
+            /* 2. '0s' delay - this makes it the FIRST to animate */
+            animation: slideInPlayer 0.5s ease-out 0s forwards;
+        }
+
+        /* --- VS Styling (Middle) --- */
+        .vs-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            
+            /* Shield styling */
+            background: #1e488f; /* Dark blue shield center */
+            padding: 15px 30px;
+            border-radius: 12px;
+            border: 4px solid #ffd700; /* Gold border */
+            box-shadow: 0 0 15px #ffd700, 0 0 20px rgba(0,0,0,0.5);
+
+            /* Animation setup */
+            /* 1. Start centered, but translated off-screen to the right */
+            transform: translate(-50%, -50%) translateX(100vw);
+            /* 2. '0.3s' delay - this makes it the SECOND to animate */
+            animation: slideInVS 0.5s ease-out 0.3s forwards;
+        }
+
+        /* Shared text styling */
+        .name-text {
+            font-size: 2.5rem; /* Large text */
+            text-shadow: 3px 3px 0px rgba(0,0,0,0.25); /* Drop shadow for "pop" */
+        }
+        
+        .vs-text {
+            font-size: 3.5rem;
+            text-shadow: 3px 3px 0px rgba(0,0,0,0.25);
+        }
+
+        /* --- Keyframe Animations --- */
+        
+        /* Player ("You") slides in from left to center */
+        @keyframes slideInPlayer {
+            to {
+                transform: translateX(0);
+            }
+        }
+
+        /* Opponent slides in from left to center */
+        @keyframes slideInOpponent {
+            to {
+                transform: translateX(0);
+            }
+        }
+
+        /* VS slides in from right to center */
+        /* It keeps its centered position with translate(-50%, -50%) */
+        @keyframes slideInVS {
+            to {
+                transform: translate(-50%, -50%) translateX(0);
+            }
+        }

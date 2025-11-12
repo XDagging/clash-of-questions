@@ -12,6 +12,7 @@ import UserContext from "./context.ts"
 import { Route, Routes, Outlet, Navigate } from "react-router-dom"
 import Index from "./page.tsx"
 import Credits from './credits/page.tsx';
+import Walkout from './components/Walkout.tsx';
 /* eslint-disable */
 const PrivateRoutes = () => {
     const user = useContext(UserContext);
@@ -61,6 +62,7 @@ function App() {
 
             <Route path="/" element={<Index />} />
             <Route path="/credits" element={<Credits />} />
+            <Route path="/test" element={<Walkout opponentOne={ {name: "carlos", trophies: 300}} opponentTwo={ {name: "baca", trophies: 250}} />} />
             <Route element={<PrivateRoutes />}>
               <Route path="/review" element={<Review />} />
               <Route path="/dashboard" element={<Dashboard />} />

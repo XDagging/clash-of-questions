@@ -8,6 +8,7 @@ export type User = {
     imgUrl?: string;
     name: string;
     email: string;
+    trophies: number;
 }
 
 export type Question = {
