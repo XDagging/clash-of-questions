@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { TrophyIcon } from 'lucide-react';
 import Crown from "../../public/crown.png"
 import Coconut from "../../public/coconut.png"
