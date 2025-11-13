@@ -1,5 +1,5 @@
 import { useState, useContext } from "react";
-import { Gamepad2, ReceiptText, TrophyIcon} from "lucide-react";
+import { Gamepad2, ReceiptText, TrophyIcon, CogIcon} from "lucide-react";
 import { Github } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import callApi from "../functions";
@@ -82,6 +82,10 @@ export default function Dashboard() {
                 className="btn btn-outline font-2 text-lg scale-150 my-3"
 
               >Instructions<ReceiptText /></button>
+
+              <Link to="/settings" className="btn btn-outline font-2 text-lg scale-150 my-3">
+                Settings <CogIcon />
+              </Link>
               
               <Link
                 to="/credits"

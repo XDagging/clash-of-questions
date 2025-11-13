@@ -1,3 +1,5 @@
+// import type { LargeNumberLike } from "crypto";
+
 export interface NotifType {
     type: string;
     message: string;
@@ -9,6 +11,11 @@ export type User = {
     name: string;
     email: string;
     trophies: number;
+    questionType: {
+      topic: string;
+      difficulty: number;
+      isMath: boolean;
+    }
 }
 
 export type Question = {
