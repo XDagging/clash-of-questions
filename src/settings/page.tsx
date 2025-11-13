@@ -1,7 +1,7 @@
 import React, {useContext, useState} from "react";
 import UserContext from "../context";
 import { Link } from "react-router-dom";
-import AdminNavbar from "../components/AdminNavbar";
+// import AdminNavbar from "../components/AdminNavbar";
 import { Cog8ToothIcon,UserIcon, ArrowRightStartOnRectangleIcon, FireIcon, InformationCircleIcon } from "@heroicons/react/24/solid";
 import type { User } from "../types";
 import { useNavigate } from "react-router-dom";
