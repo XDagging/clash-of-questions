@@ -77,6 +77,7 @@ export default function Game(props: GameProps) {
   const serverObjects = useRef(new Map<string, any>());
   const ws = useRef<WebSocket | null>(null);
   const localPlayerId = useRef<string | null>(null);
+  const thingsShooting = useRef<string[]>([]);
   const user = useContext(UserContext) as User | null;
   const latestGameState = useRef<GameStateUpdate | null>(null);
   useEffect(() => {
@@ -249,6 +250,12 @@ export default function Game(props: GameProps) {
       }
     })
 
+    // k.loadSound("placeTroop", "Voice.mp3");
+    k.loadSound("placeTroop", "monkeySounds.mp3");
+    k.loadSound("electricFight", "Electric.mp3")
+    k.loadSound("swordHit", "sword.mp3")
+    k.loadSound("towerShooting", "towerShooting.mp3")
+    k.loadSound("Shooting", "Shooting.mp3")
     k.loadSprite("monkeyFrontAnimationShooting", "monkeyAttackingFront.png", {
       sliceX: 3,
       anims: {
@@ -560,6 +567,8 @@ export default function Game(props: GameProps) {
             charObj.fullBar = fullBar;
             charObj.healthBar = healthBar;
         }
+
+        k.play("placeTroop")
         return charObj;
     }
 
@@ -703,11 +712,42 @@ if (isMoving) {
                 let clientSpriteSuffix = ""; // The string to add to the sprite name
                 let cmd = "";                  // The animation command to play
 
-                if (serverChar.type === "tower") { 
-                    // Towers are simple: they don't have front/back
-                    clientSpriteSuffix = "Shooting"; // e.g., "towerShooting"
-                    cmd = "shoot";
-                } else {
+                
+
+                  
+                  
+                  
+                  if (thingsShooting.current.indexOf(serverChar.id) === -1) {
+                    // Use a sound key and a playing handle so TypeScript knows the names
+                    let soundKey = "Shooting";
+
+                    // lets go one by one adding this up
+                    
+
+                    if (serverChar.name.toLowerCase() === "giant") {
+                      soundKey = "electricFight";
+                    } else if (serverChar.name.toLowerCase() === "shootermonkey") {
+                      soundKey = "Shooting";
+                    } else if (serverChar.name.toLowerCase() === "monkey") {
+                      soundKey = "swordHit";
+                    } else if (serverChar.name.toLowerCase() === "tower") {
+                      soundKey = "towerShooting"
+                    } 
+                      
+
+                      thingsShooting.current = [...thingsShooting.current, serverChar.id];
+                    const playingSound = k.play(soundKey);
+                    if (playingSound && typeof playingSound.onEnd === "function") {
+                      playingSound.onEnd(() => {
+                        thingsShooting.current = thingsShooting.current.filter((x) => x!==serverChar.id)
+                      })
+                    }
+                    }
+
+                    
+                 
+
+                   
                     // Troops are directional
                     if (!isFriendly) {
                         clientSpriteSuffix = "FrontAnimationShooting"; // e.g., "giantFrontAnimationShooting"
@@ -716,7 +756,14 @@ if (isMoving) {
                         clientSpriteSuffix = "BackAnimationShooting"; // e.g., "giantBackAnimationShooting"
                         cmd = "shoot_back";
                     }
+
+
+                    if (serverChar.type === "tower") { 
+                    // Towers are simple: they don't have front/back
+                    clientSpriteSuffix = "Shooting"; // e.g., "towerShooting"
+                    cmd = "shoot";
                 }
+                
 
                 // 2. Build the full client-side sprite name
                 const clientAnimName = serverChar.name + clientSpriteSuffix;
