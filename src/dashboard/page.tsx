@@ -1,6 +1,7 @@
 import { useState, useContext } from "react";
 import { Gamepad2, ReceiptText, TrophyIcon, CogIcon} from "lucide-react";
-import { Github } from "lucide-react";
+// import {  } from "lucide-react";
+import { FaDiscord } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
 import callApi from "../functions";
 import UserContext from "../context";
@@ -70,7 +71,7 @@ export default function Dashboard() {
             <img src={x} className="h-40 mx-auto" alt="DDD gif" />
             <h1 className="text-8xl font-2 mx-auto"><span className="text-primary">C</span>O<span className="text-primary">Q</span></h1>
             <p className="font-2 font-bold flex flex-row items-center justify-center gap-1"><TrophyIcon className="size-4" />{user?.trophies}</p>
-            <a href="https://github.com/XDagging/clash-of-questions" className="font-2 flex flex-row items-center gap-2">We're open source on <Github /></a>
+            <a href="https://discord.gg/3c6cEyGghQ" className="font-2 flex flex-row items-center gap-2">Join our Discord<FaDiscord />!</a>
             <div className="mt-10 flex flex-col w-full gap-2">
               <button onClick={findOpenLobby} className="btn animate-bounce btn-primary font-2 text-lg scale-150 my-3">Join a Lobby <Gamepad2 /></button>
               
