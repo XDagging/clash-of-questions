@@ -94,7 +94,7 @@ export default function Game(props: GameProps) {
     //   return; // Already connected
     // }
     try {
-      const endpoint = (window.location.href.includes("localhost")) ?  "wss://localhost:443" : "wss://api.clashofquestions.com";
+      const endpoint = (window.location.href.includes("localhost")) ?  "ws://localhost:3000" : "wss://api.clashofquestions.com";
       console.log("we just tried connecting to the websocket");
       ws.current = new WebSocket(endpoint); // Use your actual server URL
       props.websocketRef.current = ws.current;
@@ -239,7 +239,7 @@ export default function Game(props: GameProps) {
     k.loadSprite("shooterMonkeyBackAnimationShooting", "shooterMonkeyShootingAnimationBack.png", {
       sliceX: 3,
       anims: {
-        "shoot_back": { from: 0, to: 2, speed: 3, loop: false },
+        "shoot_back": { from: 0, to: 2, speed: 3, loop: true },
       }
     })
 
@@ -324,22 +324,11 @@ export default function Game(props: GameProps) {
           from: 0,
           to: 2,
           speed: 10,
+          loop: true,
         }
       }
     })
 
-
-    k.loadSprite("giantFrontAnimationShooting", "giantFrontAttack.png", {
-      sliceX: 3,
-      anims: {
-        "shoot_front": {
-          from: 0,
-          to: 2,
-          speed: 10,
-        }
-      }
-    })
-    
 
     k.loadSprite("giantBackAnimationShooting", "giantBackAttack.png", {
       sliceX: 3,
@@ -348,6 +337,7 @@ export default function Game(props: GameProps) {
           from: 0,
           to: 2,
           speed: 10,
+          loop: true,
         }
       }
     })
@@ -419,6 +409,22 @@ export default function Game(props: GameProps) {
       listOfAllSprites[spriteName].width = tileWidth;
       listOfAllSprites[spriteName].height = tileWidth;
     }
+
+    // Frame index for each sprite key — used to create fresh (non-shared) sprite components
+    const spriteFrameMap: { [key: string]: number } = {
+      fireball: 0,
+      giantBack: 1,
+      giantFront: 2,
+      shooterMonkeyBack: 3,
+      shooterMonkeyFront: 4,
+      bullet: 5,
+      coconut: 6,
+      grassOne: 7,
+      grassTwo: 8,
+      monkeyFront: 9,
+      monkeyBack: 10,
+      tower: 11,
+    };
 
 
      function generateDynamicMapLayout() {
@@ -499,8 +505,9 @@ export default function Game(props: GameProps) {
 
         const normalizedPos = normalizePosition(serverChar.pos);
 
+        const initialFrame = spriteFrameMap[spriteKey] ?? 0;
         const components: any[] = [
-            listOfAllSprites[spriteKey],
+            k.sprite("all-assets", { frame: initialFrame }),
             k.pos(normalizedPos.x, normalizedPos.y),
             k.scale(2),
             k.anchor("center"),
@@ -568,6 +575,7 @@ export default function Game(props: GameProps) {
             charObj.healthBar = healthBar;
         }
 
+        charObj._currentSprite = spriteKey;
         k.play("placeTroop")
         return charObj;
     }
@@ -695,9 +703,13 @@ if (isMoving) {
             // isFriendly = false: We see "Back" sprites
            
             const animName = `walk_${direction.toLowerCase()}`;
+            const walkingSpriteName = serverChar.name + direction + "Walking";
 
-            if (localObj.curAnim() !== animName) {
-                localObj.use(k.sprite(serverChar.name + direction + "Walking"));
+            if (localObj._currentSprite !== walkingSpriteName) {
+                localObj.use(k.sprite(walkingSpriteName));
+                localObj._currentSprite = walkingSpriteName;
+                localObj.play(animName);
+            } else if (localObj.curAnim() !== animName) {
                 localObj.play(animName);
             }
         } else {
@@ -768,19 +780,26 @@ if (isMoving) {
                 // 2. Build the full client-side sprite name
                 const clientAnimName = serverChar.name + clientSpriteSuffix;
 
-                // 3. Play the animation
-                console.log("this is the cmd", cmd, clientAnimName);
-                if (cmd && localObj.curAnim() !== cmd) {
-                    localObj.use(k.sprite(clientAnimName));
-                    localObj.play(cmd);
+                // 3. Play the animation — only swap the sprite component when it actually changes
+                if (cmd) {
+                    if (localObj._currentSprite !== clientAnimName) {
+                        localObj.use(k.sprite(clientAnimName));
+                        localObj._currentSprite = clientAnimName;
+                        localObj.play(cmd);
+                    } else if (localObj.curAnim() !== cmd) {
+                        localObj.play(cmd);
+                    }
                 }
             } else {
-                // B. Handle idle (Your original logic was already correct!)
+                // B. Handle idle
                 let spriteKey = serverChar.name;
                 if (directionalCharacters.includes(serverChar.name)) {
-                    spriteKey +=  direction;
+                    spriteKey += direction;
                 }
-                localObj.use(listOfAllSprites[spriteKey]);
+                if (localObj._currentSprite !== spriteKey) {
+                    localObj.use(listOfAllSprites[spriteKey]);
+                    localObj._currentSprite = spriteKey;
+                }
             }
         }
         // === 👆 END OF REPLACEMENT BLOCK ===
@@ -798,15 +817,12 @@ if (isMoving) {
 
         k.scene("game", () => {
 
+          let isSynchronizing = false;
           k.onUpdate(() => {
-                // Check if there are any new states in the queue
-                if (latestGameState.current) {
-                    // Grab only the MOST RECENT state from the server
+                if (latestGameState.current && !isSynchronizing) {
+                    isSynchronizing = true;
                     synchronizeGameState(latestGameState.current);
-
-                    // Synchronize the game using this definitive state
-                   
-                    // console.log
+                    isSynchronizing = false;
                 }
           });
             // Your map and UI setup code (largely unchanged)

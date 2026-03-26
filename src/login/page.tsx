@@ -18,7 +18,7 @@ import { Helmet } from "react-helmet"
 let timeout: Timeout;
 export default function Login() {
     // const nav = useNavigate();
-    const url = window.location.href.includes("localhost") ? "https://localhost:443" : "https://api.clashofquestions.com";
+    const url = window.location.href.includes("localhost") ? "http://localhost:3000" : "https://api.clashofquestions.com";
     // const [loading, setLoading] = useState(false);
     // const [user] = useState<LoginUser>({
     //     email: "",
